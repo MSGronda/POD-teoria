@@ -8,6 +8,8 @@ import java.util.*;
 public  class GenericServiceImpl implements GenericService {
 
     private int visitCount = 0;
+    private final Object visitLock = new Object();
+
     private final Queue<String> queue = new LinkedList<>();
 
     @Override
@@ -28,22 +30,30 @@ public  class GenericServiceImpl implements GenericService {
 
     @Override
     public void addVisit() {
-        this.visitCount++;
+        synchronized (visitLock) {
+            this.visitCount++;
+        }
     }
 
     @Override
     public int getVisitCount() {
-        return this.visitCount;
+        synchronized (visitLock) {
+            return this.visitCount;
+        }
     }
 
     @Override
     public boolean isServiceQueueEmpty() {
-        return queue.isEmpty();
+        synchronized (queue) {
+            return queue.isEmpty();
+        }
     }
 
     @Override
     public void addToServiceQueue(String name) {
-        this.queue.add(name);
+        synchronized (queue) {
+            this.queue.add(name);
+        }
     }
 
     @Override
@@ -51,6 +61,8 @@ public  class GenericServiceImpl implements GenericService {
         if(isServiceQueueEmpty()) {
             throw new IllegalStateException("No one in queue");
         }
-        return this.queue.remove();
+        synchronized (queue) {
+            return this.queue.remove();
+        }
     }
 }
